@@ -2,6 +2,8 @@ const auth = require("../middleware/auth");
 const { Blog, validate } = require("../models/blog");
 const { User } = require("../models/user");
 
+let ObjectId = require('mongoose').Types.ObjectId;
+
 const Joi = require('joi');
 const express = require("express");
 const router = express.Router();
@@ -29,10 +31,13 @@ const upload = multer({
   fileFilter: fileFilter
 });
 
-
 router.get("/", async (req, res) => {
-  const blogs = await Blog.find().populate('author').sort('-createdAt');
-  res.send(blogs);
+  try{
+    const blogs = await Blog.find().populate('author').sort('-createdAt');
+    res.send(blogs);
+  } catch(ex){
+    console.log(ex.message);
+  }
 });
 
 router.post("/", [auth, upload.single('blogImage')], async (req, res) => {
@@ -44,20 +49,20 @@ router.post("/", [auth, upload.single('blogImage')], async (req, res) => {
   if (error) return res.status(400).send(error.details[0].message);
 
   // const user = await User.findById(req.user._id).select({ email: 1, fname:1, lname:1, _id: -1 });
-  const user = await User.findById(req.user._id).select('_id');
+  try{
+    const user = await User.findById(req.user._id).select('_id');
 
 
-  const blog = new Blog({
-    title: req.body.title,
-    body: req.body.body,
-    blogImage: req.file == undefined ? null : req.file.path,
-    tags: tags,
-    author: user,
-    createdAt: Date.now()
-  });
-  try {
-    await blog.save();
-    res.send(blog);
+    const blog = new Blog({
+      title: req.body.title,
+      body: req.body.body,
+      blogImage: req.file == undefined ? null : req.file.path,                                                                                                                
+      tags: tags,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+      author: user,
+      createdAt: Date.now()
+    });
+      await blog.save();
+      res.send(blog);
   } catch (ex) {
     console.log(ex.message);
   }
@@ -97,7 +102,11 @@ router.put("/:id", auth, async (req, res) => {
   }
 });
 
-router.patch("/:id", auth, async (req, res) => {
+router.patch("/:id", [auth, upload.single('blogImage')], async (req, res) => {
+    let tags = req.body.tags.split(',');
+    if(tags[0] == '') tags = [];
+    req.body.tags = tags;
+
     const { error } = patchValidate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
   
@@ -105,6 +114,7 @@ router.patch("/:id", auth, async (req, res) => {
     let changes = req.body;
     let newTitle = "";
     let newBody = "";
+    let newImage = "";
     let newTags = [];
 
     try {
@@ -117,10 +127,12 @@ router.patch("/:id", auth, async (req, res) => {
 
       if(changes.body) newBody = changes.body;
       else newBody = blog.body;
+
+      if(req.file) newImage = req.file.path;
+      else newImage = blog.blogImage;
   
       if(changes.tags) newTags = changes.tags;
       else newTags = blog.tags;
-  
   
       if (user._id.equals(blog.author._id)) {
         const blog = await Blog.findByIdAndUpdate(
@@ -128,6 +140,7 @@ router.patch("/:id", auth, async (req, res) => {
           {
             title: newTitle,
             body: newBody,
+            blogImage: newImage,
             tags: newTags,
           },
           { new: true, useFindAndModify: false }
@@ -166,16 +179,41 @@ router.delete("/:id", auth, async (req, res) => {
   }
 });
 
-router.get("/:text", async (req, res) => {
-  let text = req.params.text;
+router.get("/:id", auth, async (req, res) => {
+  let user_id = req.user._id;
+  let id = req.params.id;
   // const user = await User.findById(req.user._id).select('_id');
-  let regex= new RegExp(".*"+text+".*$");
+  // let regex= new RegExp(".*"+key+".*$");
   // let fname = author.fname;
-const blogs = await Blog.find({ $or: [{title: new RegExp(text) }, {body: new RegExp(text) }, {tags: new RegExp(text) }]}).populate('author');
+  try{
+    const blog = await Blog.findById(id).populate('author');
+  
+    if(!blog) return res.status(404).send("Blog not found");
+    if(blog.author._id.equals(user_id) == false )  res.status(401).send("Access denied.");
+  
+    res.send(blog);
+  } catch(ex){
+    console.log(ex.message);
+  }
+});
 
-  if (blogs.length == 0) return res.status(404).send("Blog not found");
+router.get("/search/:key", auth, async (req, res) => {
+  let user_id = req.user._id;
+  let key = req.params.key;
 
-  res.send(blogs);
+  // const user = await User.findById(req.user._id).select('_id');
+  // let regex= new RegExp(".*"+key+".*$");
+  // let fname = author.fname;
+  try{
+    const blogs = await Blog.find({ $or: [{title: new RegExp(key) }, {body: new RegExp(key) }, {tags: new RegExp(key) }]}).populate('author').sort('-createdAt');
+  
+    if (blogs.length == 0) return res.status(404).send("Blog not found");
+    // if(blogs.author._id.equals(user_id) == false )  res.status(401).send("Access denied.");
+  
+    res.send(blogs);
+  } catch(ex){
+    console.log(ex.message);
+  }
 });
 
 router.get("/profile", auth, async (req, res) => {
@@ -194,6 +232,7 @@ function patchValidate(blog){
     const schema = Joi.object({
         title: Joi.string().min(3).max(100),
         body: Joi.string().min(3),
+        blogImage: Joi.string(),
         tags: Joi.array()
     });
     return schema.validate(blog);
