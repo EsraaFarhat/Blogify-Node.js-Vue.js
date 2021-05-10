@@ -1,28 +1,41 @@
 <template>
 <body>
-    <div class="container jumbotron align-items-center col-md-6"> 
-        <h2 class="align-middle">Login to our site</h2>
-        <form class="needs-validation" method="get" @submit.prevent="checkForm" >
-            <div class="mb-3 col-12">
-                <p v-if="errors.length">
-                    <ul>
-                        <li v-for="error in errors" :key="error" >{{ error }}</li>
-                    </ul>
-                </p>
-            </div>
-            <div class="col-md-12 mb-4" >
-                <input type="email" class="form-control mt-2" id="email" placeholder="Email" v-model="inputs.email">
-            </div>
-            <div class="col-md-12 mb-3">
-                <input type="password" class="form-control" id="password" placeholder="Password" v-model="inputs.password">
-            </div>
-            <div id="buttons">
-            <button class="btn btn-primary mt-4 col-md-6" type="submit">login</button>
-            </div>
-            <div class=" row justify-content-around mt-3"> 
-                <p>Don't have an account? <router-link to="/register">Register</router-link></p>
-            </div>
-        </form>      
+    <div class="container"> 
+        <div class="img">
+            <img src="../assets/blog.svg" alt="">
+        </div>
+        <div class="login-content">
+            <form method="get" @submit.prevent="checkForm" novalidate="true">
+                <h2 class="text-center">Welcome</h2>
+                    <span v-if="errors.exception" class="text-danger text-right"> {{errors.exception}}</span>
+                <div class="input-div one" >
+                    <div class="i">
+                        <font-awesome-icon :icon="['fas', 'envelope']"/>
+                    </div>
+                    <div class="div">
+                        <input type="email" class="form-control mt-2" id="email" placeholder="Email" v-model="inputs.email">
+                    </div>
+                </div>
+                    <!-- <div v-if="errors.email"> -->
+                    <span v-if="errors.email" class="text-danger text-right"> {{errors.email}}</span>
+                    <!-- </div> -->
+                <div class="input-div pass">
+                    <div class="i">
+                        <font-awesome-icon :icon="['fas', 'lock']"/>
+                    </div>
+                    <div class="div">
+                        <input type="password" class="form-control" id="password" placeholder="Password" v-model="inputs.password">
+                    </div>
+                </div>
+                <span v-if="errors.password" class="text-danger text-right"> {{errors.password}}</span>
+                <div id="buttons">
+                <button class="btn" type="submit">login</button>
+                </div>
+                <div class=" row justify-content-around mt-3"> 
+                    <p>Don't have an account? <router-link to="/register">Register</router-link></p>
+                </div>
+            </form>      
+        </div>
     </div>
 </body>
 </template>
@@ -36,29 +49,34 @@ export default {
                 email:"",
                 password:"",
             },
-            errors:[],
+            errors:{
+                email:"",
+                password:""
+            },
         }
     },
     methods: {
         checkForm: async function(e){
-            this.errors = []
+            this.errors = {};
             if (!this.emailValidation(this.inputs.email)) {
-                this.errors.push('Email not valid.');
+                this.errors.email = 'Email not valid.'
             }
             if (!this.passwordValidation(this.inputs.password)) {
-                this.errors.push('Password not valid.');
+                this.errors.password = 'Password not valid.'
             }
-
-            if (this.errors.length == 0) {
+            if (this.errors && Object.keys(this.errors).length === 0 && this.errors.constructor === Object) {
                 try{
                     let token = await AuthService.loginRequest(this.inputs);
+                    this.notify({title: 'Welcome back :)', type: 'success', timeout: 3000});
                     // console.log(token.data);
                     localStorage.setItem("user", token.data);
-                    this.$router.go('/');
-                    return true;
+                    setTimeout(() => {
+                        this.$router.go('/');
+                    }, 500);
                 } catch(ex){
-                    this.errors.push(ex.response.data);
-                    // console.log(ex.response.data);
+                    this.notify({title: 'Login failed', message: ex.message, type: 'error', timeout: 3000});
+                    // this.errors.exception = ex.response.data;
+                    // console.log(this.errors.exception);
                 }
             }
 
@@ -75,49 +93,168 @@ export default {
 created(){
     let token = localStorage.getItem('user');
     if(token) this.$router.push('/');
-}
+},
+notifications: {
+        notify: { 
+            title: '',
+            message: '',
+            type: ''
+        }
+    },
 }
 </script>
 
 <style scoped>
-    body{
-    padding-top:10px;
-    background-image: url(../assets/1.jpg);
-    background-repeat: no-repeat;
-    background-size: 100% 100%;
-    height: 580px;
+*{
+	padding: 0;
+	margin: 0;
+	box-sizing: border-box;
 }
-h2{
-    margin-bottom: 40px;
-    text-align: center;
+.container{
+    width: 100vw;
+    height: 90vh;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap :10rem;
+    padding: 4 2rem;
+}
+.img{
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+}
+.login-content{
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+}
+.img img{
+	width: 400px;
 }
 
-.jumbotron{
-    background-color:rgb(43, 44, 43) ;
-    border-radius: 10px;
-    width: 50%;
-    opacity: 0.93;
+form{
+    margin-top: -50px;
+	width: 360px;
 }
-.valid-feedback, .invalid-feedback{
-    font-size: medium;
+.login-content h2{
+	margin: 15px 0;
+	color: #33b1ff;
+	text-transform: uppercase;
+	font-size: 2.5rem;
 }
-.valid-feedback{
-    color: green;
+.login-content .input-div{
+	position: relative;
+    display: grid;
+    grid-template-columns: 8% 92%;
+    margin: 25px 0;
+    padding: 5px 0;
+    border-bottom: 2px solid #33b1ff;
+    margin-bottom: 10px;
+
 }
-.invalid-feedback{
-    color: red;
+
+.login-content .input-div.one{
+	margin-top: 0;
 }
-#buttons{
-    text-align: center;
+.i{
+    padding-top:15px;
+	color: #969494;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
-input{
-    height: 60px;
+
+.i font-awesome-icon{
+	transition: .3s;
 }
-p,h2{
-    color: white;
+.input-div > div{
+    position: relative;
+	height: 45px;
 }
-li{
-    font-size: 20px;
-    color: red;
+.input-div > div > input{
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	border: none;
+	outline: none;
+	background: none;
+    margin: 0.5rem 0;
+	padding: 0.5rem 0.7rem;
+	font-size: 1.2rem;
+	color: #555;
 }
+
+a{
+	text-align: right;
+	text-decoration: none;
+	color: #33b1ff;
+	font-size: 1rem;
+	transition: .3s;
+    font-weight: bold;
+}
+
+.btn{
+	display: block;
+	width: 100%;
+	height: 50px;
+	border-radius: 25px;
+	outline: none;
+	border: none;
+	background-image: linear-gradient(to right, #4dbafd, #33b1ff, #0ea3ff);
+	background-size: 200%;
+	font-size: 1.2rem;
+	color: #fff;
+	text-transform: uppercase;
+	margin: 1rem 0;
+	transition: .5s;
+}
+.btn:hover{
+	background-position: right;
+}
+
+
+@media screen and (max-width: 1050px){
+	.container{
+		grid-gap: 5rem;
+	}
+}
+
+@media screen and (max-width: 1000px){
+	form{
+		width: 290px;
+	}
+
+	.login-content h2{
+        font-size: 2.4rem;
+        margin: 8px 0;
+	}
+
+	.img img{
+		width: 400px;
+	}
+}
+
+@media screen and (max-width: 900px){
+	.container{
+		grid-template-columns: 1fr;
+	}
+
+	.img{
+		display: none;
+	}
+
+	.wave{
+		display: none;
+	}
+
+	.login-content{
+		justify-content: center;
+	}
+}
+input:focus{
+     box-shadow: inset 0 0px 0 #ddd;
+}
+
 </style>

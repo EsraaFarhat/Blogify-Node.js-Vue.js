@@ -1,34 +1,43 @@
 <template>
 <body>
-    <div class="container jumbotron align-items-center col-md-6">
-        <h2 class="align-middle">Register with us</h2>
-        <form class="needs-validation" method="get" @submit.prevent="checkForm" novalidate="true">
-            <div class="mb-3 col-12">
-                <p v-if="errors.length">
-                    <ul>
-                        <li v-for="(error, index) in errors" :key="index" >{{ error }}</li>
-                    </ul>
-                </p>
+    <div class="container">
+        <div class="img">
+            <img src="../assets/blog.svg" alt="">
+        </div>
+        <div class="login-content">
+        <form method="get" @submit.prevent="checkForm" novalidate="true">
+            <h2 class="text-center">Sign up</h2>
+            <div class="input-div one" >
+                <div class="div">
+                    <input type="text" class="form-control mt-2" id="fname" name="fname" v-model="user.fname" placeholder="First name">
+                </div>
             </div>
-            <div class="col-md-12 mb-3" >
-                <input type="text" class="form-control mt-2" id="fname" name="fname" v-model="user.fname" placeholder="First name">
-               
+            <span v-if="errors.fname" class="text-danger text-right"> {{errors.fname}}</span>
+            <div class="input-div">
+                <div class="div">
+                    <input type="text" class="form-control" id="lname" name="lname" v-model="user.lname" placeholder="Last name">
+                </div>
             </div>
-            <div class="col-md-12 mb-3">
-                <input type="text" class="form-control" id="lname" name="lname" v-model="user.lname" placeholder="Last name">
-                
+            <span v-if="errors.lname" class="text-danger text-right"> {{errors.lname}}</span>
+            <div class="input-div">
+                <div class="div">
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Email" v-model="user.email">
+                </div>
             </div>
-            <div class="col-md-12 mb-3">
-                <input type="email" class="form-control" id="email" name="email" placeholder="Email" v-model="user.email">
-                
+            <span v-if="errors.email" class="text-danger text-right"> {{errors.email}}</span>
+            <div class="input-div">
+                <div class="div">
+                    <input type="password" class="form-control" id="password" placeholder="Password" v-model="user.password">
+                </div>
             </div>
-            <div class="col-md-12 mb-3">
-                <input type="password" class="form-control" id="password" name="password" v-model="user.password" placeholder="Password">
-            </div>
-            <div class="col-md-12 mb-3">
-                <input type="number" class="form-control" id="age" name="age" v-model="user.age" placeholder="Age">
+            <span v-if="errors.password" class="text-danger text-right"> {{errors.password}}</span>
+            <div class="input-div">
+                <div class="div">
+                    <input type="number" class="form-control no-border" id="age" name="age" v-model="user.age" placeholder="Age">
+                </div>
             </div >
-            <div class="row text-light justify-content-center">
+            <span v-if="errors.age" class="text-danger text-right"> {{errors.age}}</span>
+            <div class="div text-center">
                 <!-- <h5 class="col-3" style="margin-top: 10px; margin-left: 16px">Gender</h5> -->
                 <div class="form-check form-check-inline col-4 form-control-lg">
                     <input class="form-check-input" type="radio" name="gender" id="male" value="male" v-model="user.gender">
@@ -39,11 +48,13 @@
                     <label class="form-check-label" for="female">Female</label>
                 </div>
             </div>
-            <div id="buttons">
-            <button class="btn btn-primary mt-4 col-4 " type="submit">Submit</button>
-            <button class="btn btn-primary mt-4 offset-1 col-4" type="reset">Reset</button>
+            <span v-if="errors.gender" class="text-danger text-right"> {{errors.gender}}</span>
+            <div>
+            <button class="btn" type="submit">Submit</button>
+            <button class="btn" type="reset">Reset</button>
         </div> 
         </form>
+        </div>
     </div>
   
 </body>
@@ -60,42 +71,43 @@ export default {
                 lname:"",
                 email:"",
                 password:"",
-                age:null,
                 gender:""
             },
-            errors:[],
+            errors:{},
         }
     },
     methods: {
-        checkForm: function(e){
+        checkForm: async function(e){
 
-            this.errors = []
+            this.errors = {};
             if (!this.nameValidation(this.user.fname)) {
-                this.errors.push('First name is not valid.');
+                this.errors.fname = 'First name not valid.'
             }
             if (!this.nameValidation(this.user.lname)) {
-                this.errors.push('Last name is not valid.');
+                this.errors.lname = 'Last name not valid.'
             }
             if (!this.emailValidation(this.user.email)) {
-                this.errors.push('Email is not valid.');
+                this.errors.email = 'Email not valid.'
             }
             if (!this.passwordValidation(this.user.password)) {
-                this.errors.push('Password is not valid.');
+                this.errors.password = 'Password not valid.'
             }
             if (!this.ageValidation(this.user.age)) {
-                this.errors.push('Age is not valid.');
+                this.errors.age = 'Age not valid.'
             }
             if (!this.genderValidation(this.user.gender)) {
-                this.errors.push('Gender is not valid.');
+                this.errors.gender = 'Gender not valid.'
             }
             
-            if (this.errors == 0) {
+            if (this.errors && Object.keys(this.errors).length === 0 && this.errors.constructor === Object) {
                  try{
-                    UserService.createUser(this.user);
-                    alert("User registerd successfully");
+                    await UserService.createUser(this.user);
+                    this.notify({title: '"User registerd successfully"', type: 'success', timeout: 3000});
                     this.$router.push('/login');
                 } catch(ex){
-                    this.errors.push(ex.response.data);
+                    this.notify({title: 'Sign up failed', message: ex.message, type: 'error', timeout: 3000});
+                    // this.errors.exception = ex.response.data;
+                    // console.log(this.errors.exception);
                 }
             }
 
@@ -122,37 +134,174 @@ export default {
 created(){
     let token = localStorage.getItem('user');
     if(token) this.$router.push('/');
-}
+},
+notifications: {
+    notify: { 
+        title: '',
+        message: '',
+        type: ''
+    }
+},
 }
 </script>
 
 <style scoped>
-    body{
-    padding-top:10px;
-    background-image: url(../assets/1.jpg);
-    background-repeat: no-repeat;
-    background-size: 100% 100%;
-    height: 580px;
+*{
+	padding: 0;
+	margin: 0;
+	box-sizing: border-box;
 }
-h2{
-    margin-bottom: 40px;
-    text-align: center;
-    color: white;
+.container{
+    width: 100vw;
+    height: 90vh;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap :10rem;
+    padding: 4 2rem;
+}
+.img{
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+}
+.login-content{
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+}
+.img img{
+	width: 400px;
 }
 
-.jumbotron{
-    background-color:rgb(43, 44, 43) ;
-    border-radius: 10px;
-    opacity: 0.9;
+form{
+    margin-top: -50px;
+	width: 360px;
 }
-input{
-    height: 50px;
+.login-content h2{
+	margin: 5px 0;
+    margin-top:70px;
+	color: #33b1ff;
+	text-transform: uppercase;
+	font-size: 2.2rem;
 }
-#buttons{
-    text-align: center;
+.login-content .input-div{
+	position: relative;
+    display: grid;
+    grid-template-columns: 100% 0%;
+    margin: 5px 0;
+    padding: 5px 0;
+    border-bottom: 2px solid #33b1ff;
+    margin-bottom: 10px;
 }
-li{
-    font-size: 20px;
-    color: red;
+
+.login-content .input-div.one{
+	margin-top: 0;
+}
+.i{
+    padding-top:15px;
+	color: #969494;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.i font-awesome-icon{
+	transition: .3s;
+}
+.input-div > div{
+    position: relative;
+	height: 45px;
+}
+.input-div > div > input{
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	border: none;
+	outline: none;
+	background: none;
+    margin: 0.5rem 0;
+	padding: 0.5rem 0.7rem;
+	font-size: 1.2rem;
+	color: #555;
+}
+
+a{
+	text-align: right;
+	text-decoration: none;
+	color: #33b1ff;
+	font-size: 1rem;
+	transition: .3s;
+    font-weight: bold;
+}
+
+.btn{
+	/* display: block; */
+	width: 40%;
+	height: 50px;
+	border-radius: 25px;
+	outline: none;
+	border: none;
+	background-image: linear-gradient(to right, #4dbafd, #33b1ff, #0ea3ff);
+	background-size: 200%;
+	font-size: 1.2rem;
+	color: #fff;
+	text-transform: uppercase;
+	margin: 1rem 1rem;
+	transition: .5s;
+}
+.btn:hover{
+	background-position: right;
+}
+
+
+@media screen and (max-width: 1050px){
+	.container{
+		grid-gap: 5rem;
+	}
+}
+
+@media screen and (max-width: 1000px){
+	form{
+		width: 290px;
+	}
+
+	.login-content h2{
+        font-size: 2.4rem;
+        margin: 8px 0;
+	}
+
+	.img img{
+		width: 400px;
+	}
+    .btn{
+        width:30%;
+    }
+}
+
+@media screen and (max-width: 900px){
+	.container{
+		grid-template-columns: 1fr;
+	}
+
+	.img{
+		display: none;
+	}
+
+	.wave{
+		display: none;
+	}
+
+	.login-content{
+		justify-content: center;
+	}
+}
+input:focus{
+     box-shadow: inset 0 0px 0 #ddd;
+}
+.no-border {
+    border: 0;
+    box-shadow: none; /* You may want to include this as bootstrap applies these styles too */
 }
 </style>

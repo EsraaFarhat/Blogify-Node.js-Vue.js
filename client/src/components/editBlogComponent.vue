@@ -1,12 +1,12 @@
 <template>
-    <div class="container d-flex">
+
+   <div class="container d-flex">
         <div class="row justify-content-center align-items-center">
         <div class="img  col-4 mx-5">
             <img src="../assets/bogging1.svg">
         </div>
         <div class="login-content ml-4 col-6">
-        <form method="get" @submit.prevent="checkForm" novalidate="true">
-            <!-- <h2 class="text-center">Add blog</h2> -->
+        <form method="post" action="#" @submit.prevent="checkForm" enctype="multipart/form-data">
             <div class="input-div one" >
                 <div class="div">
                     <label for="title" class="form-label">Title</label>
@@ -33,7 +33,7 @@
                     <input type="text" class="form-control" id="tags" v-model="blog.tags">
                 </div>
             </div>
-            <button type="submit" class="btn" >Add blog</button>
+            <button type="submit" class="btn" >Edit blog</button>
         </form>
         </div>
         </div>
@@ -41,9 +41,16 @@
     </div>
 
 
-<!-- //!sssssssssssssssssssssssssssssssssss -->
-        <!-- <form id="app" class="row justify-content-center" method="post" action="#" @submit.prevent="checkForm" enctype="multipart/form-data">
-        <h1 class="text-primary mt-2">add blog</h1>
+
+
+
+
+
+
+<!-- //!sssssssssssssssssssssssssssssssssssssssssssss -->
+    <!-- <div class="container">
+        <form id="app" class="row justify-content-center" method="post" action="#" @submit.prevent="checkForm" enctype="multipart/form-data">
+        <h1 class="text-primary mt-2">Edit blog</h1>
             <div class="mb-3 col-12">
                 <p v-if="errors.length">
                     <ul>
@@ -68,8 +75,9 @@
                 <label for="tags" class="form-label">Tags</label>
                 <input type="text" class="form-control" id="tags" v-model="blog.tags">
             </div>
-            <button type="submit" class="btn btn-primary col-8 mb-5" >Add blog</button>
-        </form> -->
+            <button type="submit" class="btn btn-primary col-8 mb-5" >Edit blog</button>
+        </form>
+    </div> -->
 </template>
 
 <script>
@@ -78,6 +86,8 @@ import axios from 'axios';
 
 export default {
     data: () => ({
+        oldBlog:null,
+        token: null,
         blog: {
             title: "",
             body: "",
@@ -88,6 +98,7 @@ export default {
         errors: {},
         data: null,
     }),
+    props:["id"],
     methods: {
         checkForm: async function(e){
             this.errors = {};
@@ -101,6 +112,7 @@ export default {
             if (this.errors && Object.keys(this.errors).length === 0 && this.errors.constructor === Object) {
                 // this.blog.tags = this.tagsAsString.split(',');
                 // if(this.blog.tags[0] == "") this.blog.tags = [];
+                // console.log(this.blog);
                 this.data = new FormData();
                 this.data.append('blogImage', this.blog.img); 
                 this.data.append('title', this.blog.title); 
@@ -108,18 +120,17 @@ export default {
                 this.data.append('tags', this.blog.tags); 
                 // console.log(typeof(this.data.get('blogImage')) );
                 // console.log(typeof(this.blog.img) );
-                console.log(this.blog.tags);
+                // console.log(this.data.get('title'));
                 try {
-                    let token = localStorage.getItem("user");
-                    await BlogService.createBlog(this.data, token);
-                    this.notify({title: 'Blog created successfully', type: 'success', timeout: 3000});
+                    await BlogService.editBlog(this.token, this.id, this.data);
                     // alert("Added...")
                     // this.blog = await BlogService.getBlogs();
+                    this.notify({title: 'Blog edited successfully', type: 'success', timeout: 3000});
                     this.$router.push('/');
                 } catch (ex) {
                     this.notify({title: 'Operation failed', message: ex.message, type: 'error', timeout: 3000});
-                //   this.errors.push(ex.response.data);
-                //   console.log(ex.response.data);
+                //   this.errors.push(ex);
+                //   console.log(ex);
                 }
                 // try{
                 //     let token = await AuthService.loginRequest(this.inputs);
@@ -171,7 +182,23 @@ export default {
             //             console.log('image upload response > ', response)
             //         }
             //     )
-        }     
+        }
+
+                
+    },
+    async created(){
+        try {
+            this.token = localStorage.getItem("user");
+            this.oldBlog = await BlogService.getById(this.id, this.token);
+            this.blog.title = this.oldBlog.title;
+            this.blog.body = this.oldBlog.body;
+            this.blog.img = this.oldBlog.blogImage;
+            this.blog.tags = this.oldBlog.tags;
+            // console.log(this.oldBlog);
+        } catch (ex) {
+            this.notify({title: "Can't load data", message: ex.message, type: 'error', timeout: 3000});
+            // console.log(ex);
+        }
     },
     notifications: {
         notify: { 

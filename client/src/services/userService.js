@@ -14,12 +14,17 @@ class UserService {
                     }
                 });
                 const data = res.data;
-                resolve(
-                    data.map(blog => ({
-                        ...blog,
-                        createdAt: new Date(blog.createdAt)
-                    }))
-                );
+                // console.log(data);
+                // console.log(typeof(data) === Array);
+                if(!data.fname){
+                    resolve(
+                        data.map(blog => ({
+                            ...blog,
+                            createdAt: new Date(blog.createdAt)
+                        }))
+                    );
+                }
+                else resolve(data);
             } catch (err) {
                 reject(err)
             }

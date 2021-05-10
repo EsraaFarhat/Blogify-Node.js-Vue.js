@@ -7,11 +7,18 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.35",
+    "@fortawesome/free-solid-svg-icons": "^5.15.3",
+    "@fortawesome/vue-fontawesome": "^3.0.0-3",
     "axios": "^0.21.1",
     "bootstrap": "^4.6.0",
     "jquery": "^3.6.0",
+    "jwt-decode": "^3.1.2",
+    "mini-toastr": "^0.8.1",
     "popper.js": "^1.16.1",
+    "stylus-loader": "^3.0.2",
     "vue": "^3.0.0",
+    "vue-notifications": "^1.0.2",
     "vue-router": "^4.0.5"
   },
   "devDependencies": {

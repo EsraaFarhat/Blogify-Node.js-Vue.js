@@ -3,15 +3,10 @@ import axios from "axios";
 const url = "http://127.0.0.1:3000/api/blogs/";
 
 class BlogService {
-    // get
     static getBlogs(token){
         return new Promise(async (resolve, reject) => {
             try {
-                const res = await axios.get(url, {
-                    headers: {
-                        'x-auth-token': token
-                    }
-                });
+                const res = await axios.get(url);
                 const data = res.data;
                 resolve(
                     data.map(blog => ({
@@ -25,7 +20,6 @@ class BlogService {
         })
     }
       
-    //post 
     static createBlog(blog, token){
         return axios.post(url, blog, {
             headers: {
@@ -34,10 +28,10 @@ class BlogService {
         });
     }
 
-    static searchBlogs(text, token){
+    static searchBlogs(key, token){
         return new Promise(async (resolve, reject) => {
             try {
-                const res = await axios.get(`${url}${text}`, {
+                const res = await axios.get(`${url}search/${key}`, {
                     headers: {
                         'x-auth-token': token,
                     }
@@ -55,9 +49,41 @@ class BlogService {
         });
     }
 
-    //delete
-    static deleteBlog(id){
-        return axios.delete(`${url}${id}`);
+    static getById(key, token){
+        return new Promise(async (resolve, reject) => {
+            try {
+                const res = await axios.get(`${url}${key}`, {
+                    headers: {
+                        'x-auth-token': token,
+                    }
+                });
+                const data = res.data;
+                resolve(
+                    {
+                        ...data,
+                        createdAt: new Date(data.createdAt)
+                    }
+                );
+            } catch (err) {
+                reject(err)
+            }
+        });
+    }
+
+    static editBlog(token, id, blog){
+        return axios.patch(`${url}${id}`, blog, {
+            headers:{
+                'x-auth-token': token,
+            }
+        });
+    }
+
+    static deleteBlog(token, id){
+        return axios.delete(`${url}${id}`, {
+            headers:{
+                'x-auth-token': token,
+            }
+        });
     }
 }
 
