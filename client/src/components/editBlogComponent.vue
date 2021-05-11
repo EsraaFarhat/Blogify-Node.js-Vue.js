@@ -1,364 +1,327 @@
 <template>
-
-   <div class="container d-flex">
-        <div class="row justify-content-center align-items-center">
-        <div class="img  col-4 mx-5">
-            <img src="../assets/bogging1.svg">
-        </div>
-        <div class="login-content ml-4 col-6">
-        <form method="post" action="#" @submit.prevent="checkForm" enctype="multipart/form-data">
-            <div class="input-div one" >
-                <div class="div">
-                    <label for="title" class="form-label">Title</label>
-                    <input type="text" class="form-control" id="title" v-model="blog.title" maxlength="100">
-                </div>
+  <div class="container d-flex">
+    <div class="row justify-content-center align-items-center">
+      <div class="img  col-4 mx-5">
+        <img src="../assets/bogging1.svg" />
+      </div>
+      <div class="login-content ml-4 col-6">
+        <form
+          method="post"
+          action="#"
+          @submit.prevent="checkForm"
+          enctype="multipart/form-data"
+        >
+          <div class="input-div one">
+            <div class="div">
+              <label for="title" class="form-label">Title</label>
+              <input
+                type="text"
+                class="form-control"
+                id="title"
+                v-model="blog.title"
+                maxlength="100"
+              />
             </div>
-            <span v-if="errors.title" class="text-danger text-right"> {{errors.title}}</span>
-            <div class="input-div">
-                <div class="div mb-4">
-                    <label for="body" class="form-label">Body</label>
-                    <textarea name="body" id="body" class="form-control w-100 vh-25 no-border" v-model="blog.body"></textarea> 
-                </div>
+          </div>
+          <span v-if="errors.title" class="text-danger text-right">
+            {{ errors.title }}</span
+          >
+          <div class="input-div">
+            <div class="div mb-4">
+              <label for="body" class="form-label">Body</label>
+              <textarea
+                name="body"
+                id="body"
+                class="form-control w-100 vh-25 no-border"
+                v-model="blog.body"
+              ></textarea>
             </div>
-            <span v-if="errors.body" class="text-danger text-right"> {{errors.body}}</span>
-            <div class="input-div">
-                <div class="div">
-                    <label for="file-input" class="form-label">Upload an image </label>
-                    <input type="file" class="ml-2" accept="image/*" @change="uploadImage($event)" id="file-input">
-                </div>
+          </div>
+          <span v-if="errors.body" class="text-danger text-right">
+            {{ errors.body }}</span
+          >
+          <div class="input-div">
+            <div class="div">
+              <label for="file-input" class="form-label"
+                >Upload an image
+              </label>
+              <input
+                type="file"
+                class="ml-2"
+                accept="image/*"
+                @change="uploadImage($event)"
+                id="file-input"
+              />
             </div>
-            <div class="input-div">
-                <div class="div">
-                    <label for="tags" class="form-label">Tags</label>
-                    <input type="text" class="form-control" id="tags" v-model="blog.tags">
-                </div>
+          </div>
+          <div class="input-div">
+            <div class="div">
+              <label for="tags" class="form-label">Tags</label>
+              <input
+                type="text"
+                class="form-control"
+                id="tags"
+                v-model="blog.tags"
+              />
             </div>
-            <button type="submit" class="btn" >Edit blog</button>
+          </div>
+          <button type="submit" class="btn">Edit blog</button>
         </form>
-        </div>
-        </div>
-
+      </div>
     </div>
-
-
-
-
-
-
-
-
-<!-- //!sssssssssssssssssssssssssssssssssssssssssssss -->
-    <!-- <div class="container">
-        <form id="app" class="row justify-content-center" method="post" action="#" @submit.prevent="checkForm" enctype="multipart/form-data">
-        <h1 class="text-primary mt-2">Edit blog</h1>
-            <div class="mb-3 col-12">
-                <p v-if="errors.length">
-                    <ul>
-                        <li v-for="(error, index) in errors" class="alert alert-danger" :key="index">{{ error }}</li>
-                    </ul>
-                </p>
-            </div>
-            <div class="mb-3 col-8">
-                <label for="title" class="form-label">Title</label>
-                <input type="text" class="form-control" id="title" v-model="blog.title" maxlength="100">
-            </div>
-            <div class="mb-3 col-8">
-                <label for="body" class="form-label">Body</label>
-                <textarea name="body" id="body" class="form-control" v-model="blog.body"></textarea>
-            </div>
-            <div class="mb-3 col-8">
-                <label for="file-input" class="form-label">Upload an image </label>
-                <input type="file" class="ml-2" accept="image/*" @change="uploadImage($event)" id="file-input">
-            </div>
-
-            <div class="mb-3 col-8">
-                <label for="tags" class="form-label">Tags</label>
-                <input type="text" class="form-control" id="tags" v-model="blog.tags">
-            </div>
-            <button type="submit" class="btn btn-primary col-8 mb-5" >Edit blog</button>
-        </form>
-    </div> -->
+  </div>
 </template>
 
 <script>
 import BlogService from "../services/blogService";
-import axios from 'axios';
 
 export default {
-    data: () => ({
-        oldBlog:null,
-        token: null,
-        blog: {
-            title: "",
-            body: "",
-            img:null,
-            tags: ""
-        },
-        tagsAsString: "",
-        errors: {},
-        data: null,
-    }),
-    props:["id"],
-    methods: {
-        checkForm: async function(e){
-            this.errors = {};
-            if (!this.titleValidation(this.blog.title)) {
-                this.errors.title = 'Title not valid.';
-            }
-            if (!this.bodyValidation(this.blog.body)) {
-                this.errors.body = 'Body not valid.';
-            }
-
-            if (this.errors && Object.keys(this.errors).length === 0 && this.errors.constructor === Object) {
-                // this.blog.tags = this.tagsAsString.split(',');
-                // if(this.blog.tags[0] == "") this.blog.tags = [];
-                // console.log(this.blog);
-                this.data = new FormData();
-                this.data.append('blogImage', this.blog.img); 
-                this.data.append('title', this.blog.title); 
-                this.data.append('body', this.blog.body); 
-                this.data.append('tags', this.blog.tags); 
-                // console.log(typeof(this.data.get('blogImage')) );
-                // console.log(typeof(this.blog.img) );
-                // console.log(this.data.get('title'));
-                try {
-                    await BlogService.editBlog(this.token, this.id, this.data);
-                    // alert("Added...")
-                    // this.blog = await BlogService.getBlogs();
-                    this.notify({title: 'Blog edited successfully', type: 'success', timeout: 3000});
-                    this.$router.push('/');
-                } catch (ex) {
-                    this.notify({title: 'Operation failed', message: ex.message, type: 'error', timeout: 3000});
-                //   this.errors.push(ex);
-                //   console.log(ex);
-                }
-                // try{
-                //     let token = await AuthService.loginRequest(this.inputs);
-                //     // console.log(token.data);
-                //     localStorage.setItem("user", token.data);
-                //     this.$router.push('/');
-                //     return true;
-                // } catch(ex){
-                //     this.errors.push(ex.response.data);
-                //     // console.log(ex.response.data);
-                // }
-            }
-
-            e.preventDefault();
-        },
-        titleValidation:function(title){
-            return title.length >= 3 && title.length <= 100;
-        },
-        bodyValidation:function(body){
-            return body.length >= 3;
-        },
-        uploadImage(event) {
-            this.blog.img = event.target.files[0];
-
-            // const URL = 'http://foobar.com/upload'; 
-
-            this.data = new FormData();
-            // this.data.append('name', 'blogImage');
-            this.data.append('blogImage', this.blog.img); 
-            this.data.append('title', this.blog.title); 
-            this.data.append('body', this.blog.body); 
-            this.data.append('tags', this.blog.tags); 
-
-            // this.blog = data;
-            // console.log(data);
-            // let config = {
-            //     header : {
-            //         'Content-Type' : 'image/png'
-            //     }
-            // }
-            // console.log(event.target.files[0]);
-
-            // axios.put(
-            //     URL, 
-            //     data,
-            //     config
-            //     ).then(
-            //         response => {
-            //             console.log('image upload response > ', response)
-            //         }
-            //     )
-        }
-
-                
+  data: () => ({
+    oldBlog: null,
+    token: null,
+    blog: {
+      title: "",
+      body: "",
+      img: null,
+      tags: "",
     },
-    async created(){
+    tagsAsString: "",
+    errors: {},
+    data: null,
+  }),
+  props: ["id"],
+  methods: {
+    checkForm: async function(e) {
+      this.errors = {};
+      if (!this.titleValidation(this.blog.title)) {
+        this.errors.title = "Title not valid.";
+      }
+      if (!this.bodyValidation(this.blog.body)) {
+        this.errors.body = "Body not valid.";
+      }
+
+      if (
+        this.errors &&
+        Object.keys(this.errors).length === 0 &&
+        this.errors.constructor === Object
+      ) {
+        this.data = new FormData();
+        this.data.append("blogImage", this.blog.img);
+        this.data.append("title", this.blog.title);
+        this.data.append("body", this.blog.body);
+        this.data.append("tags", this.blog.tags);
         try {
-            this.token = localStorage.getItem("user");
-            this.oldBlog = await BlogService.getById(this.id, this.token);
-            this.blog.title = this.oldBlog.title;
-            this.blog.body = this.oldBlog.body;
-            this.blog.img = this.oldBlog.blogImage;
-            this.blog.tags = this.oldBlog.tags;
-            // console.log(this.oldBlog);
+          await BlogService.editBlog(this.token, this.id, this.data);
+          this.notify({
+            title: "Blog edited successfully",
+            type: "success",
+            timeout: 3000,
+          });
+          this.$router.push("/");
         } catch (ex) {
-            this.notify({title: "Can't load data", message: ex.message, type: 'error', timeout: 3000});
-            // console.log(ex);
+          this.notify({
+            title: "Operation failed",
+            message: ex.message,
+            type: "error",
+            timeout: 3000,
+          });
         }
+      }
+
+      e.preventDefault();
     },
-    notifications: {
-        notify: { 
-            title: '',
-            message: '',
-            type: ''
-        }
+    titleValidation: function(title) {
+      return title.length >= 3 && title.length <= 100;
     },
-}
+    bodyValidation: function(body) {
+      return body.length >= 3;
+    },
+    uploadImage(event) {
+      this.blog.img = event.target.files[0];
+
+      this.data = new FormData();
+      this.data.append("blogImage", this.blog.img);
+      this.data.append("title", this.blog.title);
+      this.data.append("body", this.blog.body);
+      this.data.append("tags", this.blog.tags);
+    },
+  },
+  async created() {
+    try {
+      this.token = localStorage.getItem("user");
+      this.oldBlog = await BlogService.getById(this.id, this.token);
+      this.blog.title = this.oldBlog.title;
+      this.blog.body = this.oldBlog.body;
+      this.blog.img = this.oldBlog.blogImage;
+      this.blog.tags = this.oldBlog.tags;
+    } catch (ex) {
+      this.notify({
+        title: "Can't load data",
+        message: ex.message,
+        type: "error",
+        timeout: 3000,
+      });
+    }
+  },
+  notifications: {
+    notify: {
+      title: "",
+      message: "",
+      type: "",
+    },
+  },
+};
 </script>
 
 <style scoped>
- *{
-	padding: 0;
-	margin: 0;
-	box-sizing: border-box;
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
 }
-.container{
-    height: 90vh;
-    margin: 0rem 4rem;
+.container {
+  height: 90vh;
+  margin: 0rem 4rem;
 }
-.img img{
-	width: 90%;
-    margin-top: -35%;
-}
-
-form{
-    margin-top: -50px;
-}
-.login-content h2{
-	margin: 5px 0;
-    margin-top:70px;
-	color: #33b1ff;
-	text-transform: uppercase;
-	font-size: 2.2rem;
-}
-.login-content .input-div{
-	position: relative;
-    display: grid;
-    grid-template-columns: 100% 0%;
-    margin: 5px 0;
-    padding: 20px 0;
-    border-bottom: 2px solid #33b1ff;
-    margin-bottom: 10px;
-}
-textarea{
-    border-bottom: 2px solid #33b1ff;
-}
-.login-content .input-div.one{
-	margin-top: 0;
-}
-.i{
-    padding-top:15px;
-	color: #969494;
-	display: flex;
-	justify-content: center;
-	align-items: center;
+.img img {
+  width: 90%;
+  margin-top: -35%;
 }
 
-.i font-awesome-icon{
-	transition: .3s;
+form {
+  margin-top: -50px;
 }
-.input-div > div{
-    position: relative;
-	height: 40px;
-    padding-left: 5px;
+.login-content h2 {
+  margin: 5px 0;
+  margin-top: 70px;
+  color: #33b1ff;
+  text-transform: uppercase;
+  font-size: 2.2rem;
 }
-.input-div > div > input{
-	position: absolute;
-	left: 0;
-	top: 10px;
-	width: 100%;
-	height: 100%;
-	border: none;
-	outline: none;
-	background: none;
-    margin: 0.5rem 0;
-	padding: 0.5rem 0.7rem;
-	font-size: 1.2rem;
-	color: #555;
+.login-content .input-div {
+  position: relative;
+  display: grid;
+  grid-template-columns: 100% 0%;
+  margin: 5px 0;
+  padding: 20px 0;
+  border-bottom: 2px solid #33b1ff;
+  margin-bottom: 10px;
 }
-.input-div > div > input[type=file]{
-	top: 8px;
+textarea {
+  border-bottom: 2px solid #33b1ff;
 }
-
-a{
-	text-align: right;
-	text-decoration: none;
-	color: #33b1ff;
-	font-size: 1rem;
-	transition: .3s;
-    font-weight: bold;
+.login-content .input-div.one {
+  margin-top: 0;
+}
+.i {
+  padding-top: 15px;
+  color: #969494;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.btn{
-	display: block;
-	width: 100%;
-	height: 50px;
-	border-radius: 25px;
-	outline: none;
-	border: none;
-	background-image: linear-gradient(to right, #4dbafd, #33b1ff, #0ea3ff);
-	background-size: 200%;
-	font-size: 1.2rem;
-	color: #fff;
-	text-transform: uppercase;
-	margin: 1.5rem 0;
-	transition: .5s;
+.i font-awesome-icon {
+  transition: 0.3s;
 }
-.btn:hover{
-	background-position: right;
+.input-div > div {
+  position: relative;
+  height: 40px;
+  padding-left: 5px;
 }
-
-
-@media screen and (max-width: 1050px){
-	.container{
-		grid-gap: 5rem;
-	}
+.input-div > div > input {
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: none;
+  margin: 0.5rem 0;
+  padding: 0.5rem 0.7rem;
+  font-size: 1.2rem;
+  color: #555;
 }
-
-@media screen and (max-width: 1000px){
-	form{
-		width: 290px;
-	}
-
-	.login-content h2{
-        font-size: 2.4rem;
-        margin: 8px 0;
-	}
-
-	.img img{
-		width: 400px;
-	}
-    .btn{
-        width:30%;
-    }
+.input-div > div > input[type="file"] {
+  top: 8px;
 }
 
-@media screen and (max-width: 900px){
-	.container{
-		grid-template-columns: 1fr;
-	}
-
-	.img{
-		display: none;
-	}
-
-	.wave{
-		display: none;
-	}
-
-	.login-content{
-		justify-content: center;
-	}
+a {
+  text-align: right;
+  text-decoration: none;
+  color: #33b1ff;
+  font-size: 1rem;
+  transition: 0.3s;
+  font-weight: bold;
 }
-input:focus, textarea:focus{
-     box-shadow: inset 0 0px 0 #ddd;
+
+.btn {
+  display: block;
+  width: 100%;
+  height: 50px;
+  border-radius: 25px;
+  outline: none;
+  border: none;
+  background-image: linear-gradient(to right, #4dbafd, #33b1ff, #0ea3ff);
+  background-size: 200%;
+  font-size: 1.2rem;
+  color: #fff;
+  text-transform: uppercase;
+  margin: 1.5rem 0;
+  transition: 0.5s;
+}
+.btn:hover {
+  background-position: right;
+}
+
+@media screen and (max-width: 1050px) {
+  .container {
+    grid-gap: 5rem;
+  }
+}
+
+@media screen and (max-width: 1000px) {
+  form {
+    width: 290px;
+  }
+
+  .login-content h2 {
+    font-size: 2.4rem;
+    margin: 8px 0;
+  }
+
+  .img img {
+    width: 400px;
+  }
+  .btn {
+    width: 30%;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .container {
+    grid-template-columns: 1fr;
+  }
+
+  .img {
+    display: none;
+  }
+
+  .wave {
+    display: none;
+  }
+
+  .login-content {
+    justify-content: center;
+  }
+}
+input:focus,
+textarea:focus {
+  box-shadow: inset 0 0px 0 #ddd;
 }
 .no-border {
-    border: 0;
-    box-shadow: none; 
+  border: 0;
+  box-shadow: none;
 }
 </style>
