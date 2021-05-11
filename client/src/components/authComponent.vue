@@ -100,6 +100,7 @@ export default {
             this.$router.go("/");
           }, 500);
         } catch (ex) {
+          this.errors.exception = ex.response.data;
           this.notify({
             title: "Login failed",
             message: ex.message,
