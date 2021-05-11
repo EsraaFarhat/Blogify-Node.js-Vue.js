@@ -112,6 +112,13 @@ export default {
       });
     }
   },
+  notifications: {
+    notify: {
+      title: "",
+      message: "",
+      type: "",
+    },
+  },
 };
 </script>
 

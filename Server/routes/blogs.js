@@ -36,16 +36,12 @@ const upload = multer({
   fileFilter: fileFilter,
 });
 
-router.get("/", async (req, res) => {
-  try {
-    const blogs = await Blog.find().populate("author").sort("-createdAt");
-    res.send(blogs);
-  } catch (ex) {
-    console.log(ex.message);
-  }
+router.get("/", async (req, res, next) => {
+  const blogs = await Blog.find().populate("author").sort("-createdAt");
+  res.send(blogs);
 });
 
-router.post("/", [auth, upload.single("blogImage")], async (req, res) => {
+router.post("/", [auth, upload.single("blogImage")], async (req, res, next) => {
   let tags = req.body.tags.split(",");
   if (tags[0] == "") tags = [];
   req.body.tags = tags;
@@ -53,77 +49,70 @@ router.post("/", [auth, upload.single("blogImage")], async (req, res) => {
   const { error } = validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
-  try {
-    const user = await User.findById(req.user._id).select("_id");
+  const user = await User.findById(req.user._id).select("_id");
 
-    const blog = new Blog({
-      title: req.body.title,
-      body: req.body.body,
-      blogImage: req.file == undefined ? null : req.file.path,
-      tags: tags,
-      author: user,
-      createdAt: Date.now(),
-    });
-    await blog.save();
+  const blog = new Blog({
+    title: req.body.title,
+    body: req.body.body,
+    blogImage: req.file == undefined ? null : req.file.path,
+    tags: tags,
+    author: user,
+    createdAt: Date.now(),
+  });
+  await blog.save();
+  res.send(blog);
+});
+
+router.put("/:id", auth, async (req, res, next) => {
+  const { error } = validate(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+
+  let id = req.params.id;
+  const user = await User.findById(req.user._id).select({ _id: 1 });
+  const blog = await Blog.findById(id).select({ author: 1 });
+  const img = {
+    data: req.body.img.data,
+    contentType: req.body.img.contentType,
+  };
+
+  if (user._id.equals(blog.author._id)) {
+    const blog = await Blog.findByIdAndUpdate(
+      id,
+      {
+        title: req.body.title,
+        body: req.body.body,
+        img: img,
+        tags: req.body.tags,
+      },
+      { new: true, useFindAndModify: false }
+    );
+
+    if (!blog) return res.status(404).send("Blog not found");
+
     res.send(blog);
-  } catch (ex) {
-    console.log(ex.message);
+  } else {
+    res.status(400).send("You don't have the privilege to edit this post.");
   }
 });
 
-router.put("/:id", auth, async (req, res) => {
-  const { error } = validate(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
+router.patch(
+  "/:id",
+  [auth, upload.single("blogImage")],
+  async (req, res, next) => {
+    let tags = req.body.tags.split(",");
+    if (tags[0] == "") tags = [];
+    req.body.tags = tags;
 
-  let id = req.params.id;
-  try {
-    const user = await User.findById(req.user._id).select({ _id: 1 });
-    const blog = await Blog.findById(id).select({ author: 1 });
-    const img = {
-      data: req.body.img.data,
-      contentType: req.body.img.contentType,
-    };
+    const { error } = patchValidate(req.body);
+    if (error) return res.status(400).send(error.details[0].message);
 
-    if (user._id.equals(blog.author._id)) {
-      const blog = await Blog.findByIdAndUpdate(
-        id,
-        {
-          title: req.body.title,
-          body: req.body.body,
-          img: img,
-          tags: req.body.tags,
-        },
-        { new: true, useFindAndModify: false }
-      );
+    let id = req.params.id;
+    let changes = req.body;
+    let newTitle = "";
+    let newBody = "";
+    let newImage = "";
+    let newTags = [];
 
-      if (!blog) return res.status(404).send("Blog not found");
-
-      res.send(blog);
-    } else {
-      res.status(400).send("You don't have the privilege to edit this post.");
-    }
-  } catch (ex) {
-    console.error(ex.message);
-    res.status(404).send("Blog not found");
-  }
-});
-
-router.patch("/:id", [auth, upload.single("blogImage")], async (req, res) => {
-  let tags = req.body.tags.split(",");
-  if (tags[0] == "") tags = [];
-  req.body.tags = tags;
-
-  const { error } = patchValidate(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
-
-  let id = req.params.id;
-  let changes = req.body;
-  let newTitle = "";
-  let newBody = "";
-  let newImage = "";
-  let newTags = [];
-
-  try {
     const user = await User.findById(req.user._id).select({ _id: 1 });
     const blog = await Blog.findById(id);
 
@@ -157,72 +146,56 @@ router.patch("/:id", [auth, upload.single("blogImage")], async (req, res) => {
     } else {
       res.status(400).send("You don't have the privilege to edit this post.");
     }
-  } catch (ex) {
-    console.error(ex.message);
-    res.status(404).send("Blog not found");
   }
-});
+);
 
-router.delete("/:id", auth, async (req, res) => {
+router.delete("/:id", auth, async (req, res, next) => {
   let id = req.params.id;
-  try {
-    const user = await User.findById(req.user._id).select({ _id: 1 });
-    const blog = await Blog.findById(id).select({ author: 1 });
+  const user = await User.findById(req.user._id).select({ _id: 1 });
+  const blog = await Blog.findById(id).select({ author: 1 });
 
-    if (user._id.equals(blog.author._id)) {
-      const blog = await Blog.findByIdAndRemove(id, {
-        useFindAndModify: false,
-      });
+  if (user._id.equals(blog.author._id)) {
+    const blog = await Blog.findByIdAndRemove(id, {
+      useFindAndModify: false,
+    });
 
-      if (!blog) return res.status(404).send("Blog not found");
+    if (!blog) return res.status(404).send("Blog not found");
 
-      res.send(blog);
-    } else {
-      res.status(400).send("You don't have the privilege to edit this post.");
-    }
-  } catch (ex) {
-    console.error(ex.message);
-    res.status(404).send("Blog not found");
+    res.send(blog);
+  } else {
+    res.status(400).send("You don't have the privilege to edit this post.");
   }
 });
 
-router.get("/:id", auth, async (req, res) => {
+router.get("/:id", auth, async (req, res, next) => {
   let user_id = req.user._id;
   let id = req.params.id;
 
-  try {
-    const blog = await Blog.findById(id).populate("author");
+  const blog = await Blog.findById(id).populate("author");
 
-    if (!blog) return res.status(404).send("Blog not found");
-    if (blog.author._id.equals(user_id) == false)
-      res.status(401).send("Access denied.");
+  if (!blog) return res.status(404).send("Blog not found");
+  if (blog.author._id.equals(user_id) == false)
+    res.status(401).send("Access denied.");
 
-    res.send(blog);
-  } catch (ex) {
-    console.log(ex.message);
-  }
+  res.send(blog);
 });
 
-router.get("/search/:key", auth, async (req, res) => {
+router.get("/search/:key", auth, async (req, res, next) => {
   let key = req.params.key;
 
-  try {
-    const blogs = await Blog.find({
-      $or: [
-        { title: new RegExp(key) },
-        { body: new RegExp(key) },
-        { tags: new RegExp(key) },
-      ],
-    })
-      .populate("author")
-      .sort("-createdAt");
+  const blogs = await Blog.find({
+    $or: [
+      { title: new RegExp(key) },
+      { body: new RegExp(key) },
+      { tags: new RegExp(key) },
+    ],
+  })
+    .populate("author")
+    .sort("-createdAt");
 
-    if (blogs.length == 0) return res.status(404).send("Blog not found");
+  if (blogs.length == 0) return res.status(404).send("Blog not found");
 
-    res.send(blogs);
-  } catch (ex) {
-    console.log(ex.message);
-  }
+  res.send(blogs);
 });
 
 function patchValidate(blog) {

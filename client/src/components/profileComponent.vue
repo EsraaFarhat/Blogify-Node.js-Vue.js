@@ -6,7 +6,7 @@
           <div class=" col-md-12 ">
             <div class="card user-card-full">
               <div class="row m-l-0 m-r-0">
-                <div class=" offset-2 col-8 bg-c-lite-green user-profile">
+                <div class=" offset-2 col-8 bg-c-lite-green user-profile" v-if="user.fname">
                   <div class="card-block text-center text-white">
                     <div class="m-b-25">
                       <img
@@ -28,14 +28,15 @@
                       Age: {{ user.age }}
                     </p>
                     <p v-if="myData._id == id">Gender: {{ user.gender }}</p>
-                    <button
+                    <input type="button"
                       v-if="myData._id != id"
                       class="btn btn-lg text-light"
                       style="background-color:cornflowerblue;"
                       @click="follow"
-                    >
-                      {{ buttonText }}
-                    </button>
+                      :value="buttonText"
+                    />
+                      <!-- {{ buttonText }} -->
+                    <!-- </input> -->
                   </div>
                 </div>
                 <div
@@ -166,7 +167,6 @@ export default {
       try {
         let res = await UserService.addFollowing(this.id, this.token);
         this.buttonText = res.data;
-        console.log(res.data);
       } catch (ex) {
         this.notify({
           title: "Operation failed",
@@ -191,7 +191,6 @@ export default {
           });
 
           this.response = await UserService.profile(this.token, this.id);
-          console.log(this.response);
           if (this.response.fname) {
             this.user = this.response;
             this.blogs = {};
@@ -222,7 +221,7 @@ export default {
       this.myData = await UserService.me(this.token);
       if (this.id == "me") this.id = this.myData._id;
       for (let i = 0; i < this.myData.following.length; i++) {
-        if (this.myData.following[0]._id == this.id) {
+        if (this.myData.following[i]._id == this.id) {
           this.buttonText = "unfollow";
           break;
         }
@@ -243,6 +242,9 @@ export default {
         timeout: 3000,
       });
     }
+  },
+  updated(){
+
   },
   notifications: {
     notify: {
