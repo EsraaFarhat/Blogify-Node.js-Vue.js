@@ -128,12 +128,13 @@ export default {
           this.fname = this.myInfo[0].author.fname;
           this.lname = this.myInfo[0].author.lname;
         } catch (ex) {
-          this.notify({
-            title: "Can't load data",
-            message: ex.message,
-            type: "error",
-            timeout: 3000,
-          });
+          console.log(ex.message);
+          // this.notify({
+          //   title: "Can't load data",
+          //   message: ex.message,
+          //   type: "error",
+          //   timeout: 3000,
+          // });
         }
       }
     },

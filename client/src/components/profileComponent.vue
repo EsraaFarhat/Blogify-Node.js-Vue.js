@@ -235,13 +235,12 @@ export default {
         this.user = this.response[0].author;
       }
     } catch (ex) {
-      console.log(ex.message);
-      // this.notify({
-      //   title: "Can't load data",
-      //   message: ex.message,
-      //   type: "error",
-      //   timeout: 3000,
-      // });
+      this.notify({
+        title: "Can't load data",
+        message: ex.message,
+        type: "error",
+        timeout: 3000,
+      });
     }
   },
   updated(){
