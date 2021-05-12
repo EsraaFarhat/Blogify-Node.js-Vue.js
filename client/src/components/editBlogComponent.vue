@@ -294,9 +294,6 @@ a {
   .img img {
     width: 400px;
   }
-  .btn {
-    width: 30%;
-  }
 }
 
 @media screen and (max-width: 900px) {

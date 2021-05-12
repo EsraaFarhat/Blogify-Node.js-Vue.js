@@ -60,7 +60,9 @@
               />
             </div>
           </div>
-          <button type="submit" class="btn">Add blog</button>
+          <div>
+            <button type="submit" class="btn">Add blog</button>
+          </div>
         </form>
       </div>
     </div>
@@ -269,9 +271,6 @@ a {
 
   .img img {
     width: 400px;
-  }
-  .btn {
-    width: 30%;
   }
 }
 

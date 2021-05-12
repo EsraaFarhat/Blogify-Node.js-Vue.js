@@ -215,8 +215,8 @@ li {
 
 #fixedbutton {
   position: fixed;
-  top: 560px;
-  right: 40px;
+  top: 85%;
+  right: 3%;
   border-radius: 50%;
   background-color: cornflowerblue;
   border-color: cornflowerblue;
@@ -271,6 +271,7 @@ h6 {
   p {
     font-size: 14px;
   }
+  
 }
 
 .card-block {
