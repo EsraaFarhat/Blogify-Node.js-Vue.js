@@ -20,3 +20,8 @@
 {"message":"connected to MongoDB...","level":"info"}
 {"message":"listening on port 3000...","level":"info"}
 {"message":"connected to MongoDB...","level":"info"}
+{"message":"listening on port 3000...","level":"info"}
+{"message":"connected to MongoDB...","level":"info"}
+{"level":"error","message":"Cast to ObjectId failed for value \"undefined\" at path \"author\" for model \"Blog\""}
+{"message":"listening on port 3000...","level":"info"}
+{"message":"connected to MongoDB...","level":"info"}

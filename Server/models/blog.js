@@ -39,7 +39,7 @@ function validateBlog(blog) {
   const schema = Joi.object({
     title: Joi.string().min(3).max(100).required(),
     body: Joi.string().min(3).required(),
-    blogImage: Joi.string(),
+    blogImage: Joi.string().allow(''),
     tags: Joi.array(),
   });
   return schema.validate(blog);

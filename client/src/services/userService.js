@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const url = "http://127.0.0.1:3000/api/users/";
+const url = "https://blogify-back-end.herokuapp.com/api/users/";
 
 class UserService {
   static profile(token, id) {

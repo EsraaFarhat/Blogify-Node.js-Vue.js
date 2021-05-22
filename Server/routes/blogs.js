@@ -54,7 +54,7 @@ router.post("/", [auth, upload.single("blogImage")], async (req, res, next) => {
   const blog = new Blog({
     title: req.body.title,
     body: req.body.body,
-    blogImage: req.file == undefined ? null : req.file.path,
+    blogImage: req.body.blogImage,
     tags: tags,
     author: user,
     createdAt: Date.now(),
@@ -122,7 +122,7 @@ router.patch(
     if (changes.body) newBody = changes.body;
     else newBody = blog.body;
 
-    if (req.file) newImage = req.file.path;
+    if (changes.blogImage) newImage = changes.blogImage;
     else newImage = blog.blogImage;
 
     if (changes.tags) newTags = changes.tags;

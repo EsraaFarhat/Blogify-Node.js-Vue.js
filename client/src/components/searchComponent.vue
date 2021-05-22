@@ -79,7 +79,7 @@
                     <div class=" text-left mb-3">
                       <img
                         v-if="blog.blogImage"
-                        :src="'http://localhost:3000/' + blog.blogImage"
+                        :src="blog.blogImage"
                         style="width:100%; height:auto;"
                         class=""
                       />

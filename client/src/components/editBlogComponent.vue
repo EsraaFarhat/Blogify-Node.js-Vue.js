@@ -84,6 +84,7 @@ export default {
       body: "",
       img: null,
       tags: "",
+      imgUrl: ""
     },
     tagsAsString: "",
     errors: {},
@@ -105,8 +106,22 @@ export default {
         Object.keys(this.errors).length === 0 &&
         this.errors.constructor === Object
       ) {
+         if(this.blog.img){
+          let img = new FormData();
+          img.append("file", this.blog.img);
+          img.append("upload_preset", "Blogify");
+          img.append("cloud_name", "dc7kn9h2m");
+          await fetch(" https://api.cloudinary.com/v1_1/dc7kn9h2m/image/upload",{
+            method: "post",
+            body: img
+          })
+          .then(res => res.json())
+          .then(data => this.blog.imgUrl = data.url)
+          .catch(err => conole.log(err))
+        }
+
         this.data = new FormData();
-        this.data.append("blogImage", this.blog.img);
+        this.data.append("blogImage", this.blog.imgUrl);
         this.data.append("title", this.blog.title);
         this.data.append("body", this.blog.body);
         this.data.append("tags", this.blog.tags);
@@ -140,7 +155,7 @@ export default {
       this.blog.img = event.target.files[0];
 
       this.data = new FormData();
-      this.data.append("blogImage", this.blog.img);
+      this.data.append("blogImage", this.blog.imgUrl);
       this.data.append("title", this.blog.title);
       this.data.append("body", this.blog.body);
       this.data.append("tags", this.blog.tags);

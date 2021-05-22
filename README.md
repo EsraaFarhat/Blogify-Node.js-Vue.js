@@ -1,19 +1,22 @@
-# client
+# Twitter clone using Node.js and Vue.js
 
-## Project setup
-```
-npm install
-```
+## Description:
+    • blogs 
+        - Blogs have title, body, photo, author, and tags
+        - Users can search using either the author, the title or any of the tags
+    • Home page 
+        - This page will contain the latest blog posts by all website users
+    • Registered User
+        - Can post blogs
+        - Can edit, delete his own blogs
+        - Can follow/unfollow other Users 
+        - Can search
+        - Can see others’ profile
+        - See page with followed authors articles
+    • UnRegistered User (Anonymous) 
+        - Can see the website home page and can read any article 
+        - Can’t follow or search
+        - Can’t see users profiles
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+### You can try it from here: *[https://blogify-front-end.herokuapp.com/](https://blogify-front-end.herokuapp.com/)
 
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
